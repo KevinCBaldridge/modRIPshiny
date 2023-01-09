@@ -1,0 +1,40 @@
+<h1>Input file list</h1>
+<ol>
+<li>	factors.tbl</li>
+<li>	inputfilelist.txt</li>
+<li>	individual files of rsem read counts</li>
+</ol>
+<h1>Input format requirements:</h1>
+<h4>factors.tbl must be a tab-separated file, organized as follows (example included in data file):</h4>
+<ul>
+  <li><b>first column:</b></li>
+    <ul>
+      <li>firstline is header, ”file”</li>
+      <li>each row is the name of each file as named by the RSEM algorithm (default naming is important to determine isoform vs gene level summary for this analysis)</li>
+    </ul>
+  <li><b>second column:</b></li>
+    <ul>
+      <li>firstline is header, “replicate”</li>
+      <li>each row is a string representing which biological replicate corresponds to the data in each file in the first column. These must be matched between the input and IP/antibody samples</li>
+    </ul>
+  <li><b>third column:</b></li>
+    <ul>
+    <li>firstline is header, “abTreatment”</li>
+    <li>each row indicates whether or not the sample for the row was treated with antibody pulldown (enrichment for 8OG) corresponding to the file in the row</li>
+    <li>It is REQUIRED that each control be indicated with an entry of “none”, but the indicator for antibody can be any string (i.e. “yes” or “8OG” or “m5C” in case multiple antibody pulldowns were performed, for example)</li>
+    </ul>
+  <li><b>fourth column:</b></li>
+    <ul>
+      <li>firstline is header, “exposureCondition”</li>
+      <li>each row indicates the factors that were used for exposure study corresponding to the file in the row</li>
+      <li>It is REQUIRED that each control be indicated with an entry of “control”, but the indicator for other treatments can be any string (i.e. “exposed” or “test” or “ozone-acrolein-methacrolein” or “OAM”)</li>
+    </ul>
+  <li><b>fifth column:</b></li>
+    <ul>
+      <li>firstline is header, “exposureLevel”</li>
+      <li>each row indicates the level of exposure corresponding to the file in the row (i.e. “Low” or “High” or “400ppb” or “0.4” or “4”</li>
+      <li>If you only have one exposure level, you must still include this column and just enter all the same value for every row. It can be arbitrary, as it will not be used in DESeq analysis and only in organizing data</li>
+      <li>The variables in this column will be used to organize your data into subsets for each exposure level for enrichment analysis</li>
+    </ul>
+</ul>
+

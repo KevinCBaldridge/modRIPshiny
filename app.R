@@ -89,7 +89,7 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
-    infoModal <- modalDialog(includeHTML("Instructions.htm"),
+    infoModal <- modalDialog(includeHTML("Instructions.html"),
   #this instructions doc should be edited though, probably don't need file list? - or need to ref datapath from filename to ensure ordering...
       title="Instructions")
     showModal(infoModal)
