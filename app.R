@@ -7,7 +7,8 @@
 
 library(shiny)
 library(tximport)
-
+#library(modRIPseq)
+library(dplyr)
 
 #to do:
 ###finish input buttons
@@ -70,11 +71,12 @@ ui <- fluidPage(
 
         ),
           #
-
+#maybe I should have the UI add tabs for each stage as it goes, building input objects, building dds, then results, etc displayed on each tab
         # This is largely placeholder for now
         mainPanel(
           verbatimTextOutput("random"),
           verbatimTextOutput("tmp"),
+          tableOutput("factorTbl"),
           #ideally make this fit reactive to change label for the current filtered set info?
           downloadButton('downloadMe',label="Download current filtered set"),
 
@@ -89,6 +91,35 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
+#after I update modRIPseq package update, these will be obsolete and instead use those same functions from modRIPseq package
+  loadFactors <- function(filepath=system.file(package='modRIPseq',"extdata","factorsAll.tbl")){
+    dir <- dirname(filepath)
+    factorTbl <- readr::read_table(filepath)
+    for (i in seq_along(factorTbl)) factorTbl[[i]] <- forcats::as_factor(factorTbl[[i]])
+    factorTbl$file <- file.path(dir,factorTbl$file)
+    return(factorTbl)
+  }
+
+  #after I update modRIPseq package update, these will be obsolete and instead use those same functions from modRIPseq package
+  reorderFactorsByFile <- function(factortibble=factorTbl,filecol=file,filelist=fileList){
+    factortibble <- factortibble %>% dplyr::arrange(factor({{filecol}},levels=filelist))
+    return(factortibble)
+  }
+
+###NOTE that i think i should just go ahead and see if I can use a reactive wrapper to set these data at the front end, then all other renderings and such can just use those earlier set variables?
+#after this function, the filelist should be instead just factorTbl$file, ordered right way as such
+    output$factorTbl <- renderTable({
+      if (input$usePubData){load("data/data_padjSubset.Rdata");"using previously published data"}
+      else {
+      factorTbl <- loadFactors(input$upload %>%
+                                            dplyr::filter(grepl("factor",name))%>%
+                                            dplyr::select(datapath) %>% as.character())
+      factorTbl <- reorderFactorsByFile(factortibble = factorTbl,
+                                                   filecol = file,
+                                                   filelist = input$upload)
+      }
+    })
+
     infoModal <- modalDialog(includeHTML("Instructions.html"),
   #this instructions doc should be edited though, probably don't need file list? - or need to ref datapath from filename to ensure ordering...
       title="Instructions")
@@ -98,7 +129,7 @@ server <- function(input, output) {
     })
     observeEvent(input$buildDDS,{
       output$tmp <- renderTable(
-        tmp <- tximport(input$upload$datapath,type = 'rsem',txOut = TRUE)
+        dataset <- tximport(input$upload$datapath,type = 'rsem',txOut = TRUE)
       )
     })
     output$random <- renderText({
@@ -111,7 +142,7 @@ server <- function(input, output) {
     #ideally
     output$downloadMe <- downloadHandler(filename = "data.csv",
                                          content=function(file){
-                                           write.csv(data,file)
+                                           write.csv(dataset,file)
                                          })
     # output$result <- renderDataTable({
     #   if (input$buildDDS){
